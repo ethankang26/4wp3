@@ -31,6 +31,11 @@
     {{#tasks}}
         <div>
             <strong>{{title}}</strong> - {{course_name}} (Due: {{due_date}}, Priority: {{priority}})
+            
+            <!-- Delete Button -->
+            <form action="/delete/{{id}}" method="POST" style="display:inline;">
+                <button type="submit">Delete</button>
+            </form>
         </div>
     {{/tasks}}
 
