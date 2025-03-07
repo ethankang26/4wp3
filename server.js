@@ -1,6 +1,7 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
+const mustacheExpress = require('mustache-express');
 
 const app = express();
 const port = 3000;
@@ -34,19 +35,42 @@ db.run(`CREATE TABLE IF NOT EXISTS tasks (
     }
 });
 
-// Middleware to parse form data
+// Set up Mustache as the template engine
+app.engine('mustache', mustacheExpress());
+app.set('view engine', 'mustache');
+app.set('views', './views');
+
 app.use(express.urlencoded({ extended: true }));
 
-// Route to fetch all tasks
+// Route to display tasks and form
 app.get('/', (req, res) => {
     db.all('SELECT * FROM tasks', [], (err, rows) => {
         if (err) {
             console.error("Error fetching tasks:", err.message);
             res.status(500).json({ error: err.message });
         } else {
-            res.json(rows);
+            res.render('index', { tasks: rows });
         }
     });
+});
+
+// Route to handle form submission (Add Task)
+app.post('/add', (req, res) => {
+    const { title, course_name, due_date, priority } = req.body;
+
+    // Validate inputs
+    if (!title || !course_name || !due_date || isNaN(priority) || priority < 1 || priority > 5) {
+        return res.status(400).send("Invalid input. Please ensure all fields are filled correctly.");
+    }
+
+    db.run(`INSERT INTO tasks (title, course_name, due_date, priority, status) 
+            VALUES (?, ?, ?, ?, 'pending')`,
+        [title, course_name, due_date, priority], (err) => {
+            if (err) {
+                console.error("Error adding task:", err.message);
+            }
+            res.redirect('/');
+        });
 });
 
 // Start the server
