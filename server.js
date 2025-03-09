@@ -42,14 +42,33 @@ app.set('views', './views');
 
 app.use(express.urlencoded({ extended: true }));
 
-// Route to display tasks and form
+// Route to display tasks with filtering
 app.get('/', (req, res) => {
-    db.all('SELECT * FROM tasks', [], (err, rows) => {
+    let filter = req.query.filter; // Get filter from query parameters
+
+    let sql = 'SELECT * FROM tasks';
+    let params = [];
+
+    if (filter === 'pending') {
+        sql += ' WHERE status = ?';
+        params.push('pending');
+    } else if (filter === 'completed') {
+        sql += ' WHERE status = ?';
+        params.push('completed');
+    }
+
+    db.all(sql, params, (err, rows) => {
         if (err) {
             console.error("Error fetching tasks:", err.message);
             res.status(500).json({ error: err.message });
         } else {
-            res.render('index', { tasks: rows });
+            // Add helper flags for Mustache template
+            rows.forEach(task => {
+                task.pending = task.status === 'pending';
+                task.completed = task.status === 'completed';
+            });
+
+            res.render('index', { tasks: rows, filter });
         }
     });
 });
@@ -71,6 +90,30 @@ app.post('/add', (req, res) => {
             }
             res.redirect('/');
         });
+});
+
+// Route to delete a task
+app.post('/delete/:id', (req, res) => {
+    const taskId = req.params.id;
+
+    db.run(`DELETE FROM tasks WHERE id = ?`, [taskId], (err) => {
+        if (err) {
+            console.error("Error deleting task:", err.message);
+        }
+        res.redirect('/');
+    });
+});
+
+// Route to mark a task as completed
+app.post('/complete/:id', (req, res) => {
+    const taskId = req.params.id;
+
+    db.run(`UPDATE tasks SET status = 'completed' WHERE id = ?`, [taskId], (err) => {
+        if (err) {
+            console.error("Error marking task as completed:", err.message);
+        }
+        res.redirect('/');
+    });
 });
 
 // Start the server
