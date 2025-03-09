@@ -42,10 +42,10 @@ app.set('views', './views');
 
 app.use(express.urlencoded({ extended: true }));
 
-// Route to display tasks with filtering and sorting
+// Route to display tasks with sorting and overdue display
 app.get('/', (req, res) => {
-    let filter = req.query.filter; // Get filter from query parameters
-    let sort = req.query.sort; // Get sorting option
+    let filter = req.query.filter; // "pending", "completed", "overdue"
+    let sort = req.query.sort; // Sorting option: "due_date"
 
     let sql = 'SELECT * FROM tasks';
     let params = [];
@@ -56,13 +56,12 @@ app.get('/', (req, res) => {
     } else if (filter === 'completed') {
         sql += ' WHERE status = ?';
         params.push('completed');
+    } else if (filter === 'overdue') {
+        sql += ' WHERE due_date < DATE("now") AND status = "pending"';
     }
 
-    // Apply sorting
     if (sort === 'due_date') {
-        sql += ' ORDER BY due_date ASC'; // Earliest due dates first
-    } else if (sort === 'priority') {
-        sql += ' ORDER BY priority DESC'; // Highest priority first
+        sql += ' ORDER BY due_date ASC';
     }
 
     db.all(sql, params, (err, rows) => {
@@ -70,7 +69,6 @@ app.get('/', (req, res) => {
             console.error("Error fetching tasks:", err.message);
             res.status(500).json({ error: err.message });
         } else {
-            // Add helper flags for Mustache template
             rows.forEach(task => {
                 task.pending = task.status === 'pending';
                 task.completed = task.status === 'completed';
@@ -81,12 +79,10 @@ app.get('/', (req, res) => {
     });
 });
 
-
 // Route to handle form submission (Add Task)
 app.post('/add', (req, res) => {
     const { title, course_name, due_date, priority } = req.body;
 
-    // Validate inputs
     if (!title || !course_name || !due_date || isNaN(priority) || priority < 1 || priority > 5) {
         return res.status(400).send("Invalid input. Please ensure all fields are filled correctly.");
     }
@@ -123,6 +119,23 @@ app.post('/complete/:id', (req, res) => {
         }
         res.redirect('/');
     });
+});
+
+// Route to handle inline task updates
+app.post('/edit/:id', (req, res) => {
+    const taskId = req.params.id;
+    const { title, course_name, due_date, priority } = req.body;
+
+    db.run(
+        `UPDATE tasks SET title = ?, course_name = ?, due_date = ?, priority = ? WHERE id = ?`,
+        [title, course_name, due_date, priority, taskId],
+        (err) => {
+            if (err) {
+                console.error("Error updating task:", err.message);
+            }
+            res.redirect('/');
+        }
+    );
 });
 
 // Start the server
