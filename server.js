@@ -42,9 +42,10 @@ app.set('views', './views');
 
 app.use(express.urlencoded({ extended: true }));
 
-// Route to display tasks with filtering
+// Route to display tasks with filtering and sorting
 app.get('/', (req, res) => {
     let filter = req.query.filter; // Get filter from query parameters
+    let sort = req.query.sort; // Get sorting option
 
     let sql = 'SELECT * FROM tasks';
     let params = [];
@@ -55,6 +56,13 @@ app.get('/', (req, res) => {
     } else if (filter === 'completed') {
         sql += ' WHERE status = ?';
         params.push('completed');
+    }
+
+    // Apply sorting
+    if (sort === 'due_date') {
+        sql += ' ORDER BY due_date ASC'; // Earliest due dates first
+    } else if (sort === 'priority') {
+        sql += ' ORDER BY priority DESC'; // Highest priority first
     }
 
     db.all(sql, params, (err, rows) => {
@@ -68,10 +76,11 @@ app.get('/', (req, res) => {
                 task.completed = task.status === 'completed';
             });
 
-            res.render('index', { tasks: rows, filter });
+            res.render('index', { tasks: rows, filter, sort });
         }
     });
 });
+
 
 // Route to handle form submission (Add Task)
 app.post('/add', (req, res) => {
