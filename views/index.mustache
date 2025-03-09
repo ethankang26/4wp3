@@ -14,6 +14,11 @@
     <a href="/?filter=pending" {{#pendingFilter}}style="font-weight: bold;"{{/pendingFilter}}>Show Pending</a> |
     <a href="/?filter=completed" {{#completedFilter}}style="font-weight: bold;"{{/completedFilter}}>Show Completed</a>
 
+    <!-- Sorting Buttons -->
+    <h2>Sort Tasks</h2>
+    <a href="/?sort=due_date{{#filter}}&filter={{filter}}{{/filter}}" {{#sort_due_date}}style="font-weight: bold;"{{/sort_due_date}}>Sort by Due Date</a> |
+    <a href="/?sort=priority{{#filter}}&filter={{filter}}{{/filter}}" {{#sort_priority}}style="font-weight: bold;"{{/sort_priority}}>Sort by Priority</a>
+
     <!-- Task Form -->
     <h2>Add a New Task</h2>
     <form action="/add" method="POST">
