@@ -41,6 +41,19 @@
             </form>
         </div>
 
+        <!-- Sorting & Filtering Options -->
+        <div class="d-flex justify-content-between mb-3">
+            <div>
+                <a href="/" class="btn btn-outline-primary {{^filter}}active{{/filter}}">Show All</a>
+                <a href="/?filter=pending" class="btn btn-outline-warning {{#pendingFilter}}active{{/pendingFilter}}">Show Pending</a>
+                <a href="/?filter=completed" class="btn btn-outline-success {{#completedFilter}}active{{/completedFilter}}">Show Completed</a>
+                <a href="/?filter=overdue" class="btn btn-outline-danger {{#overdueFilter}}active{{/overdueFilter}}">Show Overdue</a>
+            </div>
+            <div>
+                <a href="/?sort=due_date{{#filter}}&filter={{filter}}{{/filter}}" class="btn btn-outline-dark">Sort by Due Date</a>
+            </div>
+        </div>
+
         <!-- Task List -->
         <div class="card shadow p-4">
             <h2 class="mb-3">Task List</h2>
