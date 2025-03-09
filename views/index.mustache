@@ -8,6 +8,12 @@
 <body>
     <h1>Study Planner & Deadline Tracker</h1>
 
+    <!-- Filter Buttons -->
+    <h2>Filter Tasks</h2>
+    <a href="/" {{^filter}}style="font-weight: bold;"{{/filter}}>Show All</a> |
+    <a href="/?filter=pending" {{#pendingFilter}}style="font-weight: bold;"{{/pendingFilter}}>Show Pending</a> |
+    <a href="/?filter=completed" {{#completedFilter}}style="font-weight: bold;"{{/completedFilter}}>Show Completed</a>
+
     <!-- Task Form -->
     <h2>Add a New Task</h2>
     <form action="/add" method="POST">
