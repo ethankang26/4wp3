@@ -47,7 +47,7 @@ app.get('/', (req, res) => {
     let filter = req.query.filter; // "pending", "completed", "overdue"
     let sort = req.query.sort; // Sorting option: "due_date"
 
-    let sql = 'SELECT * FROM tasks';
+    let sql = 'SELECT *, (due_date < DATE("now") AND status = "pending") AS is_overdue FROM tasks';
     let params = [];
 
     if (filter === 'pending') {
@@ -69,15 +69,18 @@ app.get('/', (req, res) => {
             console.error("Error fetching tasks:", err.message);
             res.status(500).json({ error: err.message });
         } else {
+            // Add helper flags for Mustache template
             rows.forEach(task => {
-                task.pending = task.status === 'pending';
+                task.pending = task.status === 'pending' && !task.is_overdue;
                 task.completed = task.status === 'completed';
+                task.overdue = task.is_overdue;
             });
 
             res.render('index', { tasks: rows, filter, sort });
         }
     });
 });
+
 
 // Route to handle form submission (Add Task)
 app.post('/add', (req, res) => {
