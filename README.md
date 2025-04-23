@@ -61,7 +61,7 @@ Ideas for Future Enhancements
 Author
 ------
 Ethan Kang  
-Automation Engineering Student at McMaster University  
+Software Automation Engineering Student at McMaster University  
 [linkedin.com/in/ethankang26](https://www.linkedin.com/in/ethankang26)
 
 License
